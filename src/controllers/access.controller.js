@@ -1,20 +1,20 @@
 'use strict'
 
-const { CreatedResponse } = require("../core/success.response")
+const { SuccessResponse } = require("../core/success.response")
 const AccessService = require("../services/access.service")
+const statusCodes = require("../utils/statusCodes")
 
 class AccessController {
+  login = async (req, res, next) => {
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await AccessService.login(req.body)
+    }).send(res)
+  }
+
   signUp = async (req, res, next) => {
-    // return res.status(200).json(await AccessService.signUp(req.body))
-    // instead of try catch block, you can use asyncHandler
-    // try {
-    //   // code here
-    // } catch (error) {
-    //   console.log(`Err:: ${error}`)
-    //   next(error)
-    // }
-    new CreatedResponse({
-      message: "Register successfully",
+    new SuccessResponse({
+      statusCode: statusCodes.CREATED,
       metadata: await AccessService.signUp(req.body)
     }).send(res)
   }

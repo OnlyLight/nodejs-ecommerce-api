@@ -1,18 +1,10 @@
 'use strict'
 
-const StatusCode = {
-  OK: 200,
-  CREATED: 201
-}
-
-const MessageStatusCode = {
-  OK: 'OK',
-  CREATED: 'Created',
-}
+const messagePhrases = require("../utils/messagePhrases")
 
 class SuccessResponse {
-  constructor(message, statusCode, metadata) {
-    this.message = message
+  constructor({ message, statusCode, metadata }) {
+    this.message = message ? message : messagePhrases[statusCode]
     this.statusCode = statusCode
     this.metadata = metadata
   }
@@ -22,19 +14,6 @@ class SuccessResponse {
   }
 }
 
-class CreatedResponse extends SuccessResponse {
-  constructor({message = MessageStatusCode.CREATED, statusCode = StatusCode.CREATED, metadata = {}}) {
-    super(message, statusCode, metadata)
-  }
-}
-
-class OkResponse extends SuccessResponse {
-  constructor({message = MessageStatusCode.OK, statusCode = StatusCode.OK, metadata = {}}) {
-    super(message, statusCode, metadata)
-  }
-}
-
 module.exports = {
-  CreatedResponse,
-  OkResponse
+  SuccessResponse
 }

@@ -3,6 +3,12 @@ const express = require('express')
 const morgan = require('morgan')
 const { default: helmet } = require('helmet')
 const compression = require('compression')
+const crypto = require('crypto')
+
+const { ErrorResponse } = require('./core/error.response')
+const apiKeyModel = require('./models/apiKey.model')
+const { getInfoDta } = require('./utils')
+const statusCodes = require('./utils/statusCodes')
 
 const app = express()
 
@@ -16,6 +22,20 @@ app.use(express.urlencoded({ extended: true }))
 // init DB
 require('./dbs/init.mongodb')
 
+app.post('/key', async (req, res) => {
+  const newKey = await apiKeyModel.create({
+    key: crypto.randomBytes(64).toString("hex"),
+    permissions: ['0000']
+  })
+
+  res.status(statusCodes.CREATED).json({
+    key: getInfoDta({
+      object: newKey,
+      fields: ["_id", "key", "status", "permissions"]
+    })
+  })
+})
+
 // init router
 app.use('', require('./routers'))
 
@@ -28,11 +48,10 @@ app.use((req, res, next) => {
 
 app.use((error, req, res) => {
   const statusCode = error.status || 500
-  return res.status(statusCode).json({
-    status: 'error',
-    code: statusCode,
-    message: error.message || 'Internal Server Error'
-  })
+  return ErrorResponse({
+    message: error.message,
+    statusCode
+  }).send(res)
 })
 
 module.exports = app
