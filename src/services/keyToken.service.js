@@ -6,7 +6,7 @@ const keytokenModel = require('../models/keyToken.model')
 class KeyTokenService {
   static createKeyToken = async ({ userId, refreshToken, publicKey, privateKey }) => {
     try {
-      const filter = { user: userId }
+      const filter = { user: Types.ObjectId(userId) }
       const update = {
         publicKey,
         privateKey,
@@ -32,8 +32,16 @@ class KeyTokenService {
 
   static removeKeyById = async (id) => {
     return await keytokenModel.deleteOne({
-      _id: Types.ObjectId(id)
+      user: Types.ObjectId(id)
     })
+  }
+
+  static findByRefreshTokenUsed = async (refreshToken) => {
+    return await keytokenModel.findOne({ refreshTokensUsed: refreshToken }).lean()
+  }
+
+  static findByRefreshToken = async (refreshToken) => {
+    return await keytokenModel.findOne({ refreshToken }).lean()
   }
 }
 

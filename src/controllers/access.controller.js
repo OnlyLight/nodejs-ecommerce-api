@@ -5,6 +5,13 @@ const AccessService = require("../services/access.service")
 const statusCodes = require("../utils/statusCodes")
 
 class AccessController {
+  handlerRefreshToken = async (req, res, next) => {
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await AccessService.handlerRefeshToken(req.body.refeshToken)
+    }).send(res)
+  }
+
   logout = async (req, res, next) => {
     new SuccessResponse({
       statusCode: statusCodes.OK,
