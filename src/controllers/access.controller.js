@@ -5,6 +5,13 @@ const AccessService = require("../services/access.service")
 const statusCodes = require("../utils/statusCodes")
 
 class AccessController {
+  logout = async (req, res, next) => {
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await AccessService.logout(req)
+    }).send(res)
+  }
+
   login = async (req, res, next) => {
     new SuccessResponse({
       statusCode: statusCodes.OK,

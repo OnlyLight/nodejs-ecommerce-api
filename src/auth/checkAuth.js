@@ -1,5 +1,6 @@
 'use strict'
 
+const { asyncHandler } = require("../helper/asyncHandler")
 const { findById } = require("../services/apiKey.service")
 
 const HEADER = {
@@ -7,28 +8,23 @@ const HEADER = {
   AUTHORIZATION: 'authorization'
 }
 
-const apiKey = async (req, res, next) => {
-  try {
-    const key = req.headers[HEADER.API_KEY]
+const apiKey = asyncHandler(async (req, res, next) => {
+  const key = req.headers[HEADER.API_KEY]
 
-    if (!key) {
-      return res.status(403).json({ message: 'Forbidden Error' })
-    }
-
-    // curl get apiKey through apiKey schema
-    const objKey = await findById(key)
-    if (!objKey) {
-      return res.status(403).json({ message: 'Forbidden Error' })
-    }
-
-    req.objKey = objKey
-
-    return next()
-  } catch (error) {
-    console.log(`Err:: ${error}`)
-    return next(error)
+  if (!key) {
+    return res.status(403).json({ message: 'Forbidden Error' })
   }
-}
+
+  // curl get apiKey through apiKey schema
+  const objKey = await findById(key)
+  if (!objKey) {
+    return res.status(403).json({ message: 'Forbidden Error' })
+  }
+
+  req.objKey = objKey
+
+  return next()
+})
 
 const permissions = (permission) => {
   return (req, res, next) => {
@@ -45,14 +41,7 @@ const permissions = (permission) => {
   }
 }
 
-const asyncHandler = fn => {
-  return (req, res, next) => {
-    return fn(req, res, next).catch(next)
-  }
-}
-
 module.exports = {
   apiKey,
-  permissions,
-  asyncHandler
+  permissions
 }
