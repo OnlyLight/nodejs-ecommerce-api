@@ -9,6 +9,6 @@ const router = Router()
 
 // authentication
 router.use(authentication)
-router.post('/shop/logout', asyncHandler(productController.createProduct))
+router.post('/', asyncHandler(productController.createProduct))
 
 module.exports = router

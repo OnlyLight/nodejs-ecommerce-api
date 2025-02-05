@@ -9,6 +9,7 @@ const KeyTokenService = require("./keyToken.service")
 const { ErrorResponse } = require("../core/error.response")
 const { findByEmail } = require("./shop.service")
 const statusCodes = require("../utils/statusCodes")
+const keyTokenModel = require('../models/keyToken.model')
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -18,27 +19,25 @@ const RoleShop = {
 }
 
 class AccessService {
-  static handlerRefeshToken = async (refreshToken) => {
+  static handlerRefeshToken = async ({ refreshToken, user, keyStore }) => {
+    if (!user || !keyStore) {
+      throw new ErrorResponse({ statusCode: statusCodes.INTERNAL_SERVER_ERROR, message: "Something wrong!! Pls relogin" })
+    }
+
+    const { userId, email } = user
+
     // 1. validate the refresh token
-    const foundKey = await KeyTokenService.findByRefreshTokenUsed(refreshToken)
-
-    // 2. delete old key and create new key
-    if (foundKey) {
-      const { userId } = await verifyJWT(refreshToken, foundKey.publicKey)
-
-      // 2.1 delete old key by userId
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      // 2. delete old key
       await KeyTokenService.removeKeyById(userId)
       throw new ErrorResponse({ statusCode: statusCodes.FORBIDDEN, message: "Something wrong!! Pls relogin" })
     }
 
     // 3. find token not used in order get payload
-    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken)
-    if (!holderToken) {
+    if (keyStore.refreshToken != refreshToken) {
       throw new ErrorResponse({ statusCode: statusCodes.UNAUTHORIZED, message: "Invalid refresh token!! Shop isn't registered" })
     }
 
-    // 4. decode payload
-    const { userId, email } = await verifyJWT(refreshToken, holderToken.publicKey)
     const foundShop = await findByEmail({ email })
 
     if (!foundShop) {
@@ -49,14 +48,14 @@ class AccessService {
     const { privateKey, publicKey } = generateKeyPair()
     const newTokens = await createTokenPair({ userId: foundShop._id, email }, publicKey, privateKey)
 
-    await holderToken.update({
-      $set: {
-        refreshToken: newTokens.refreshToken
+    const result = await keyTokenModel.findOneAndUpdate(
+      { _id: keyStore._id },
+      {
+        $set: { refreshToken: newTokens.refreshToken },
+        $addToSet: { refreshTokensUsed: refreshToken },
       },
-      $addToSet: {
-        refreshTokensUsed: newTokens.refreshToken
-      }
-    })
+      { new: true }
+    );
 
     return {
       user: { userId, email },
@@ -65,8 +64,9 @@ class AccessService {
   }
 
   static logout = async({ keyStore }) => {
-    const delKey = await KeyTokenService.removeKeyById(keyStore._id)
+    const delKey = await KeyTokenService.removeKeyById(keyStore.user)
 
+    console.log("keyStore.user::", keyStore.user)
     console.log("delKey::", delKey)
 
     return {

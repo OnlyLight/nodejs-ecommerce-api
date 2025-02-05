@@ -6,7 +6,7 @@ const keytokenModel = require('../models/keyToken.model')
 class KeyTokenService {
   static createKeyToken = async ({ userId, refreshToken, publicKey, privateKey }) => {
     try {
-      const filter = { user: Types.ObjectId(userId) }
+      const filter = { user: userId }
       const update = {
         publicKey,
         privateKey,
@@ -14,8 +14,8 @@ class KeyTokenService {
         refreshToken
       }
       const options = {
-        upsert: true,
-        new: true
+        upsert: true, // If the document exists, it will be updated. If the document does not exist, a new one will be inserted.
+        new: true // Returns the updated document instead of the old one.
       }
 
       const tokens = await keytokenModel.findOneAndUpdate(filter, update, options)
@@ -27,22 +27,22 @@ class KeyTokenService {
   }
 
   static findByUserId = async (userId) => {
-    return await keytokenModel.findOne({ user: Types.ObjectId(userId) }).lean()
+    return await keytokenModel.findOne({ user: userId })
   }
 
   static removeKeyById = async (id) => {
     return await keytokenModel.deleteOne({
-      user: Types.ObjectId(id)
+      user: new Types.ObjectId(id)
     })
   }
 
-  static findByRefreshTokenUsed = async (refreshToken) => {
-    return await keytokenModel.findOne({ refreshTokensUsed: refreshToken }).lean()
-  }
+  // static findByRefreshTokenUsed = async (refreshToken) => {
+  //   return await keytokenModel.findOne({ refreshTokensUsed: refreshToken }).lean()
+  // }
 
-  static findByRefreshToken = async (refreshToken) => {
-    return await keytokenModel.findOne({ refreshToken }).lean()
-  }
+  // static findByRefreshToken = async (refreshToken) => {
+  //   return await keytokenModel.findOne({ refreshToken }).lean()
+  // }
 }
 
 module.exports = KeyTokenService

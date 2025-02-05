@@ -10,7 +10,8 @@ const { findByUserId } = require('../services/keyToken.service')
 const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
-  AUTHORIZATION: 'authorization'
+  AUTHORIZATION: 'authorization', // access token
+  REFRESH_TOKEN: 'x-rtoken-id' // refresh token
 }
 
 const generateKeyPair = () => {
@@ -69,18 +70,17 @@ const authentication = asyncHandler(async (req, res, next) => {
   }
 
   // 3. verifyToken
-  const accessToken = req.headers[HEADER.AUTHORIZATION]
-  if (!accessToken) {
+  const refreshToken = req.headers[HEADER.REFRESH_TOKEN]
+  if (!refreshToken) {
     throw new ErrorResponse({
-      statusCode: statusCodes.UNAUTHORIZED
+      statusCode: statusCodes.NOT_FOUND,
+      message: 'Missing refresh token'
     })
   }
 
-  JWT.verify(accessToken, keyStore.publicKey, (err, decoded) => {
+  JWT.verify(refreshToken, keyStore.publicKey, (err, decoded) => {
     if (err) {
-      throw new ErrorResponse({
-        statusCode: statusCodes.UNAUTHORIZED
-      })
+      console.error('Error verify access token::', err)
     }
 
     if (decoded.userId !== userId) {
@@ -90,19 +90,49 @@ const authentication = asyncHandler(async (req, res, next) => {
       })
     }
 
-    console.log('Decoded access token::', decoded)
+    console.log('Decoded refresh token::', decoded)
 
     req.keyStore = keyStore
+    req.decodedUser = decoded
+    req.refreshToken = refreshToken
 
     return next()
   })
+
+  // const accessToken = req.headers[HEADER.AUTHORIZATION]
+  // if (!accessToken) {
+  //   throw new ErrorResponse({
+  //     statusCode: statusCodes.UNAUTHORIZED
+  //   })
+  // }
+
+  // JWT.verify(accessToken, keyStore.publicKey, (err, decoded) => {
+  //   if (err) {
+  //     throw new ErrorResponse({
+  //       statusCode: statusCodes.UNAUTHORIZED
+  //     })
+  //   }
+
+  //   if (decoded.userId !== userId) {
+  //     throw new ErrorResponse({
+  //       statusCode: statusCodes.UNAUTHORIZED,
+  //       message: 'Invalid userId'
+  //     })
+  //   }
+
+  //   console.log('Decoded access token::', decoded)
+
+  //   req.keyStore = keyStore
+
+  //   return next()
+  // })
 
   // 4. check user in DB
   // 5. check keyStore with userId
 })
 
-const verifyJWT = async (token, keyStore) => {
-  return await JWT.verify(token, keyStore)
+const verifyJWT = async (token, publicKey) => {
+  return await asyncHandler(JWT.verify(token, publicKey))
 }
 
 module.exports = {
