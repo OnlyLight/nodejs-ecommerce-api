@@ -6,11 +6,14 @@ const statusCodes = require("../utils/statusCodes")
 
 class ProductFactory {
   static async createProduct(type, payload) {
+    console.log("type::", type);
+    console.log("payload::", payload);
+    
     switch (type) {
-      case "clothing":
-        return new Clothing(payload)
-      case "electronic":
-        return new Electronic(payload)
+      case "Clothing":
+        return new Clothing(payload).createProduct()
+      case "Electronics":
+        return new Electronic(payload).createProduct()
       default:
         throw new ErrorResponse({
           message: "Invalid product type",
@@ -55,9 +58,7 @@ class Clothing extends Product {
       })
     }
 
-    return {
-      product: newProduct
-    }
+    return newProduct
   }
 }
 
@@ -79,9 +80,7 @@ class Electronic extends Product {
       })
     }
 
-    return {
-      product: newProduct
-    }
+    return newProduct
   }
 }
 
