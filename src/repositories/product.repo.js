@@ -12,6 +12,14 @@ const findAllPublishForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip })
 }
 
+const queryProduct = async ({ query, limit, skip }) => {
+  return await product.find(query)
+    .populate('product_shop', 'name email -_id')
+    .sort({ updateAt: -1 }) // sort by latest update
+    .skip(skip).limit(limit).lean().exec()
+  // exec() let we know that we have asynchronous
+}
+
 const searchProductByUser = async ({ keySearch }) => {
   const regexSearch = RegExp(keySearch)
   console.log("keySearch::", keySearch);
@@ -27,12 +35,18 @@ const searchProductByUser = async ({ keySearch }) => {
   return result
 }
 
-const queryProduct = async ({ query, limit, skip }) => {
-  return await product.find(query)
-    .populate('product_shop', 'name email -_id')
-    .sort({ updateAt: -1 }) // sort by latest update
-    .skip(skip).limit(limit).lean().exec()
-  // exec() let we know that we have asynchronous
+const findAllProducts = async ({ limit, sort, page, filter, select }) => {
+  const skip = (page - 1) * limit
+  const sortBy = sort === 'ctime' ? { _id: -1 } : { _id: 1 }
+
+  const products = await product.find(filter)
+    .sort(sortBy).skip(skip).limit(limit).select(select).lean()
+
+  return products
+}
+
+const findProduct = async ({ product_id, unSelect }) => {
+  return await product.findById(product_id).select(unSelect).lean()
 }
 
 const publishProductByShop = async ({ product_shop, product_id }) => {
@@ -82,7 +96,9 @@ const unpublishProductByShop = async ({ product_shop, product_id }) => {
 module.exports = {
   findAllDraftsForShop,
   findAllPublishForShop,
+  findAllProducts,
+  findProduct,
   searchProductByUser,
   publishProductByShop,
-  unpublishProductByShop
+  unpublishProductByShop,
 }

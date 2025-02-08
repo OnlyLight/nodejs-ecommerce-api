@@ -2,7 +2,8 @@
 
 const { ErrorResponse } = require("../core/error.response")
 const { product, clothing, electronic } = require("../models/product.model")
-const { findAllDraftsForShop, publishProductByShop, findAllPublishForShop, unpublishProductByShop, searchProductByUser } = require("../repositories/product.repo")
+const { findAllDraftsForShop, publishProductByShop, findAllPublishForShop, unpublishProductByShop, searchProductByUser, findAllProducts, findProduct } = require("../repositories/product.repo")
+const { getSelectData, getUnSelectData } = require("../utils")
 const statusCodes = require("../utils/statusCodes")
 
 class ProductFactory {
@@ -25,6 +26,10 @@ class ProductFactory {
     }
 
     return new productClass(payload).createProduct()
+  }
+
+  static async updateProduct() {
+
   }
 
   static async publishProductByShop({ product_shop, product_id }) {
@@ -55,6 +60,23 @@ class ProductFactory {
 
   static async getListSearchProducts({ keySearch }) {
     return await searchProductByUser({ keySearch })
+  }
+
+  static async findAllProducts({ limit = 50, sort = 'ctime', page = 1, filter = { isPublish: true } }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: getSelectData(['product_name', 'product_price', 'product_thumb'])
+    })
+  }
+
+  static async findProduct({ product_id }) {
+    return await findProduct({
+      product_id,
+      unSelect: getUnSelectData(['__v'])
+    })
   }
 }
 

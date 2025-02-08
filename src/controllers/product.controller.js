@@ -39,7 +39,7 @@ class ProductController {
     const { limit, skip } = req.body
 
     new SuccessResponse({
-      statusCode: statusCodes.CREATED,
+      statusCode: statusCodes.OK,
       metadata: await ProductFactory.findAllDraftsForShop({
         product_shop: req.decodedUser.userId,
         limit,
@@ -52,7 +52,7 @@ class ProductController {
     const { limit, skip } = req.body
 
     new SuccessResponse({
-      statusCode: statusCodes.CREATED,
+      statusCode: statusCodes.OK,
       metadata: await ProductFactory.findAllPublishForShop({
         product_shop: req.decodedUser.userId,
         limit,
@@ -68,6 +68,29 @@ class ProductController {
       statusCode: statusCodes.OK,
       metadata: await ProductFactory.getListSearchProducts({
         keySearch: key
+      })
+    }).send(res)
+  }
+
+  findAllProducts = async (req, res, next) => {
+    const { limit, sort, page, filter } = req.query
+
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await ProductFactory.findAllProducts({
+        limit,
+        sort,
+        page,
+        filter
+      })
+    }).send(res)
+  }
+
+  findProduct = async (req, res, next) => {
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await ProductFactory.findProduct({
+        product_id: req.params.id
       })
     }).send(res)
   }
