@@ -4,8 +4,7 @@ const { asyncHandler } = require("../helper/asyncHandler")
 const { findById } = require("../services/apiKey.service")
 
 const HEADER = {
-  API_KEY: 'x-api-key',
-  AUTHORIZATION: 'authorization'
+  API_KEY: 'x-api-key'
 }
 
 const apiKey = asyncHandler(async (req, res, next) => {

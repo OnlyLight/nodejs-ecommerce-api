@@ -7,3 +7,5 @@ services:
       - MONGODB_DATABASE="shopDEV"
     ports:
       - 27017:27017
+    volumes:
+      - ./.data/mongodb:/data/db

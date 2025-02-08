@@ -32,7 +32,7 @@ class KeyTokenService {
 
   static removeKeyById = async (id) => {
     return await keytokenModel.deleteOne({
-      user: new Types.ObjectId(id)
+      user: id
     })
   }
 

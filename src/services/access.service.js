@@ -74,7 +74,7 @@ class AccessService {
     }
   }
 
-  static login = async ({email, password, refreshToken = null}) => {
+  static login = async ({ email, password, refreshToken = null }) => {
     // 1. check email exist
     const foundShop = await findByEmail({ email })
     if (!foundShop) {
@@ -98,7 +98,7 @@ class AccessService {
     console.log('tokens::', tokens)
 
     await KeyTokenService.createKeyToken({
-      userId: foundShop._id,
+      userId: foundShop._id, // shop ID
       refreshToken: tokens.refreshToken,
       privateKey,  // no save privateKey it is use for testing
       publicKey
@@ -114,7 +114,7 @@ class AccessService {
     }
   }
 
-  static signUp = async ({name, email, password}) => {
+  static signUp = async ({ name, email, password }) => {
     // shopModel.findOne({email}) => return object of mongoose
     // shopModel.findOne({email}).lean() => return object of javascript => reduce size of obj
     const holderShop = await shopModel.findOne({ email }).lean()
@@ -143,7 +143,7 @@ class AccessService {
     const { privateKey, publicKey } = generateKeyPair()
 
     const keyStore = await KeyTokenService.createKeyToken({
-      userId: newShop._id,
+      userId: newShop._id, // shop ID
       privateKey, // no save privateKey it is use for testing
       publicKey
     })

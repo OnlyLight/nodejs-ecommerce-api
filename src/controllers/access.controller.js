@@ -19,21 +19,31 @@ class AccessController {
   logout = async (req, res, next) => {
     new SuccessResponse({
       statusCode: statusCodes.OK,
-      metadata: await AccessService.logout(req)
+      metadata: await AccessService.logout({
+        keyStore: req.keyStore
+      })
     }).send(res)
   }
 
   login = async (req, res, next) => {
+    const { email, password } = req.body
+
     new SuccessResponse({
       statusCode: statusCodes.OK,
-      metadata: await AccessService.login(req.body)
+      metadata: await AccessService.login({
+        email, password
+      })
     }).send(res)
   }
 
   signUp = async (req, res, next) => {
+    const { name, email, password } = req.body
+
     new SuccessResponse({
       statusCode: statusCodes.CREATED,
-      metadata: await AccessService.signUp(req.body)
+      metadata: await AccessService.signUp({
+        name, email, password
+      })
     }).send(res)
   }
 }
