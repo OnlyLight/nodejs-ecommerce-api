@@ -2,6 +2,7 @@
 
 const { Types } = require('mongoose')
 const keytokenModel = require('../models/keyToken.model')
+const { updateModel } = require('../utils')
 
 class KeyTokenService {
   static createKeyToken = async ({ userId, refreshToken, publicKey, privateKey }) => {
@@ -18,7 +19,13 @@ class KeyTokenService {
         new: true // Returns the updated document instead of the old one.
       }
 
-      const tokens = await keytokenModel.findOneAndUpdate(filter, update, options)
+      const tokens = await updateModel({
+        filter,
+        payload: update,
+        isUpsert: options.upsert,
+        model: keytokenModel
+      })
+      // const tokens = await keytokenModel.findOneAndUpdate(filter, update, options)
 
       return tokens ? tokens.publicKey : null
     } catch (err) {

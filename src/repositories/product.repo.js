@@ -2,7 +2,6 @@
 
 const { Types } = require("mongoose")
 const { product } = require("../models/product.model")
-const productModel = require("../models/product.model")
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip })
@@ -100,5 +99,5 @@ module.exports = {
   findProduct,
   searchProductByUser,
   publishProductByShop,
-  unpublishProductByShop,
+  unpublishProductByShop
 }

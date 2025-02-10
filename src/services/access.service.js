@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 
 const shopModel = require("../models/shop.model")
 const { generateKeyPair, createTokenPair, verifyJWT } = require("../auth/authUtils")
-const { getInfoDta } = require("../utils")
+const { getInfoDta, updateModel } = require("../utils")
 const KeyTokenService = require("./keyToken.service")
 const { ErrorResponse } = require("../core/error.response")
 const { findByEmail } = require("./shop.service")
@@ -48,14 +48,22 @@ class AccessService {
     const { privateKey, publicKey } = generateKeyPair()
     const newTokens = await createTokenPair({ userId: foundShop._id, email }, publicKey, privateKey)
 
-    const result = await keyTokenModel.findOneAndUpdate(
-      { _id: keyStore._id },
-      {
+    const rs = await updateModel({
+      filter: { _id: keyStore._id },
+      payload: {
         $set: { refreshToken: newTokens.refreshToken },
         $addToSet: { refreshTokensUsed: refreshToken },
       },
-      { new: true }
-    );
+      model: keyTokenModel
+    })
+    // const result = await keyTokenModel.findOneAndUpdate(
+    //   { _id: keyStore._id },
+    //   {
+    //     $set: { refreshToken: newTokens.refreshToken },
+    //     $addToSet: { refreshTokensUsed: refreshToken },
+    //   },
+    //   { new: true }
+    // );
 
     return {
       user: { userId, email },

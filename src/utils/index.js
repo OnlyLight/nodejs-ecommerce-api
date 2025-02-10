@@ -15,8 +15,17 @@ const getUnSelectData = (select = []) => {
   return _.mapValues(_.keyBy(select), () => 0)
 }
 
+const updateModel = async ({ filter, payload, model, isNew = true, isUpsert = false }) => {
+  return await model.findOneAndUpdate(
+    filter,
+    payload,
+    { new: isNew, upsert: isUpsert }
+  )
+}
+
 module.exports = {
   getInfoDta,
   getSelectData,
-  getUnSelectData
+  getUnSelectData,
+  updateModel
 }
