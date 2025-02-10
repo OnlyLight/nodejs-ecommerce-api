@@ -18,11 +18,14 @@ class ProductController {
   updateProduct = async (req, res, next) => {
     new SuccessResponse({
       statusCode: statusCodes.OK,
-      metadata: await ProductFactory.updateProduct(req.body.product_type, {
-        ...req.body,
-        id: req.params.id,
-        product_shop: req.decodedUser.userId,
-      }),
+      metadata: await ProductFactory.updateProduct(
+        req.body.product_type,
+        req.params.id,
+        {
+          ...req.body,
+          product_shop: req.decodedUser.userId,
+        }
+      ),
     }).send(res);
   };
 

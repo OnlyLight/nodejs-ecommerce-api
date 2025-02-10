@@ -11,7 +11,13 @@ const {
   findAllProducts,
   findProduct,
 } = require("../repositories/product.repo");
-const { getSelectData, getUnSelectData, updateModel } = require("../utils");
+const {
+  getSelectData,
+  getUnSelectData,
+  updateModel,
+  deepClean,
+  updateNestedObjectParser,
+} = require("../utils");
 const statusCodes = require("../utils/statusCodes");
 
 class ProductFactory {
@@ -36,9 +42,11 @@ class ProductFactory {
     return new productClass(payload).createProduct();
   }
 
-  static async updateProduct(type, payload) {
+  static async updateProduct(type, id, payload) {
     console.log("type::", type);
+    console.log("id::", id);
     console.log("payload::", payload);
+    console.log("remove null payload::", deepClean(payload));
 
     const productClass = ProductFactory.productRegistry[type];
     if (!productClass) {
@@ -48,7 +56,7 @@ class ProductFactory {
       });
     }
 
-    return new productClass(payload).updateProduct(payload.id);
+    return new productClass(deepClean(payload)).updateProduct(id);
   }
 
   static async publishProductByShop({ product_shop, product_id }) {
@@ -187,7 +195,10 @@ class Clothing extends Product {
     }
 
     // 3. update product
-    const updateProduct = await super.updateProduct(updateAttributes._id, this);
+    const updateProduct = await super.updateProduct(
+      updateAttributes._id,
+      updateNestedObjectParser(this)
+    );
     if (!updateProduct) {
       throw new ErrorResponse({
         message: "Update product err",
@@ -249,7 +260,10 @@ class Electronic extends Product {
     }
 
     // 3. update product
-    const updateProduct = await super.updateProduct(updateAttributes._id, this);
+    const updateProduct = await super.updateProduct(
+      updateAttributes._id,
+      updateNestedObjectParser(this)
+    );
     if (!updateProduct) {
       throw new ErrorResponse({
         message: "Update product err",
