@@ -2,6 +2,7 @@
 
 const { ErrorResponse } = require("../core/error.response");
 const { product, clothing, electronic } = require("../models/product.model");
+const { insertInventory } = require("../repositories/inventory.repo");
 const {
   findAllDraftsForShop,
   publishProductByShop,
@@ -133,7 +134,27 @@ class Product {
   }
 
   async createProduct(productId) {
-    return await product.create({ ...this, _id: productId });
+    const newProduct = await product.create({ ...this, _id: productId });
+    if (!newProduct) {
+      throw new ErrorResponse({
+        message: "Create new product err",
+        statusCode: statusCodes.BAD_REQUEST,
+      });
+    }
+
+    const result = await insertInventory({
+      productId: newProduct._id,
+      shopId: newProduct.product_shop,
+      stock: newProduct.product_quantity,
+    });
+    if (!result) {
+      throw new ErrorResponse({
+        message: "Insert inventory err",
+        statusCode: statusCodes.BAD_REQUEST,
+      });
+    }
+
+    return newProduct;
   }
 
   async updateProduct(productId, payload) {

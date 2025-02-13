@@ -44,6 +44,25 @@ const updateModel = async ({
   });
 };
 
+const findAllInModel = async ({ filter, model, limit, sort, page, select }) => {
+  const skip = (page - 1) * limit;
+  const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
+
+  const result = await model
+    .find(filter)
+    .select(select)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  return result;
+};
+
+const findOneModelById = async ({ id, select, model }) => {
+  return await model.findById(id).select(select).lean();
+};
+
 //**
 // use for update key in mongoose object
 // if update by put the object => it will replace the existing by the new object
@@ -73,6 +92,8 @@ module.exports = {
   getInfoDta,
   getSelectData,
   getUnSelectData,
+  findAllInModel,
+  findOneModelById,
   deepClean,
   updateModel,
   updateNestedObjectParser,
