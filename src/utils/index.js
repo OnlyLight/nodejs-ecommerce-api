@@ -63,6 +63,10 @@ const findOneModelById = async ({ id, select, model }) => {
   return await model.findById(id).select(select).lean();
 };
 
+const findOneModelByFilter = async ({ filter, model }) => {
+  return await model.findOne(filter).lean();
+};
+
 //**
 // use for update key in mongoose object
 // if update by put the object => it will replace the existing by the new object
@@ -89,12 +93,15 @@ const updateNestedObjectParser = (obj) => {
 };
 
 module.exports = {
+  // QUERIES
   getInfoDta,
   getSelectData,
   getUnSelectData,
   findAllInModel,
   findOneModelById,
+  findOneModelByFilter,
   deepClean,
+  // Updates
   updateModel,
   updateNestedObjectParser,
 };

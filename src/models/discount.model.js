@@ -27,6 +27,7 @@ const discountSchema = new mongoose.Schema(
     },
     discount_code: {
       type: String,
+      unique: true,
       required: true,
     },
     discount_start_date: {
