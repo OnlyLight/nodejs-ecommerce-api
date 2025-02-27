@@ -100,7 +100,12 @@ class ProductFactory {
       sort,
       page,
       filter,
-      select: getSelectData(["product_name", "product_price", "product_thumb"]),
+      select: getSelectData([
+        "product_name",
+        "product_price",
+        "product_thumb",
+        "product_shop",
+      ]),
     });
   }
 
