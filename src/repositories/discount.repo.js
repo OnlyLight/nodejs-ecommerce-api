@@ -10,6 +10,7 @@ const {
 } = require("../utils");
 const discountModel = require("../models/discount.model");
 const { ErrorResponse } = require("../core/error.response");
+const statusCodes = require("../utils/statusCodes");
 
 const createDiscount = async ({
   code,
@@ -261,7 +262,7 @@ const getDiscountAmount = async ({ code, userId, shopId, products = [] }) => {
   const startDate = new Date(discount_start_date);
   const endDate = new Date(discount_end_date);
 
-  if (now > startDate || now < endDate) {
+  if (now <= startDate || now >= endDate) {
     throw new ErrorResponse({
       statusCode: statusCodes.NOT_FOUND,
       message: "Discount expired",

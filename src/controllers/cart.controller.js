@@ -5,16 +5,27 @@ const {
   addToCart,
   getListCart,
   deleteItemInCart,
+  updateCart,
 } = require("../services/cart.service");
 const statusCodes = require("../utils/statusCodes");
 
 class CartController {
-  createCart = async (req, res) => {
+  initialCart = async (req, res) => {
     const { userId, product } = req.body;
 
     new SuccessResponse({
       statusCode: statusCodes.OK,
       metadata: await addToCart({ userId, product }),
+    }).send(res);
+  };
+
+  updateCart = async (req, res) => {
+    const { userId } = req.params;
+    const { products } = req.body;
+
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await updateCart({ userId, products }),
     }).send(res);
   };
 

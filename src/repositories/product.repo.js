@@ -1,8 +1,14 @@
 "use strict";
 
 const { Types } = require("mongoose");
+const {
+  findAllInModel,
+  findOneModelById,
+  findOneModelByFilter,
+} = require("../utils");
 const { product } = require("../models/product.model");
-const { findAllInModel, findOneModelById } = require("../utils");
+const { ErrorResponse } = require("../core/error.response");
+const statusCodes = require("../utils/statusCodes");
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
@@ -50,6 +56,7 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
     limit,
     select,
     sort,
+    page,
   });
   // const products = await product.find(filter)
   //   .sort(sortBy).skip(skip).limit(limit).select(select).lean()
@@ -108,6 +115,30 @@ const unpublishProductByShop = async ({ product_shop, product_id }) => {
   return nModified;
 };
 
+const checkProductByServer = async (products) => {
+  return await Promise.all(
+    products.map(async (p) => {
+      const foundProduct = await findOneModelByFilter({
+        filter: { _id: new Types.ObjectId(p.product_id) },
+        model: product,
+      });
+
+      if (!foundProduct) {
+        throw new ErrorResponse({
+          message: `Product not found: ${p.product_id}`,
+          statusCode: statusCodes.NOT_FOUND,
+        });
+      }
+
+      return {
+        product_id: p._id,
+        product_quantity: p.product_quantity,
+        product_price: foundProduct.product_price,
+      };
+    })
+  );
+};
+
 module.exports = {
   findAllDraftsForShop,
   findAllPublishForShop,
@@ -116,4 +147,5 @@ module.exports = {
   searchProductByUser,
   publishProductByShop,
   unpublishProductByShop,
+  checkProductByServer,
 };

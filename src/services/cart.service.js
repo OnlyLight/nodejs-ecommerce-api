@@ -2,7 +2,7 @@
 
 const { Types } = require("mongoose");
 const cartModel = require("../models/cart.model");
-const productModel = require("../models/product.model");
+const { product } = require("../models/product.model");
 const {
   createUserCart,
   updateUserCartQuantity,
@@ -43,41 +43,125 @@ class CartService {
   }
 
   static async updateCart({ userId, products = [] }) {
-    const {
-      product_id,
-      product_quantity,
-      old_quantity,
-    } = products[0]?.item_products[0];
+    // payload example
+    // {
+    //   "products": [
+    //     {
+    //       "shop_id": "",
+    //       "item_products": [{
+    //         "product_id": "",
+    //         "product_quantity": "",
+    //         "product_name": "",
+    //         "product_price": ""
+    //       }]
+    //     }
+    //   ]
+    // }
 
-    const foundProduct = await findOneModelByFilter({
-      filter: {
-        _id: new Types.ObjectId(product_id),
-      },
-      model: productModel,
-    });
-
-    if (!foundProduct) {
-      throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
-    }
-
-    if (foundProduct.product_shop.toString() !== products[0]?.shop_id) {
-      throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
-    }
-
-    if (!product_quantity) {
-      return await CartService.deleteItemInCart({
-        userId,
-        productId: product_id,
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new ErrorResponse({
+        statusCode: statusCodes.BAD_REQUEST,
+        message: "Invalid products array",
       });
     }
 
-    return await updateUserCartQuantity({
-      userId,
-      product: {
-        product_id,
-        product_quantity: product_quantity - old_quantity,
-      },
-    });
+    const updatedProducts = [];
+
+    for (let p of products) {
+      if (!p.item_products || !Array.isArray(p.item_products)) {
+        throw new ErrorResponse({
+          statusCode: statusCodes.BAD_REQUEST,
+          message: "Invalid item_products array",
+        });
+      }
+
+      for (let item of p.item_products) {
+        const { product_id, product_quantity, old_quantity } = item;
+
+        if (!product_id || typeof product_quantity !== "number") {
+          throw new ErrorResponse({
+            statusCode: statusCodes.BAD_REQUEST,
+            message: "Invalid product data",
+          });
+        }
+
+        const foundProduct = await findOneModelByFilter({
+          filter: {
+            _id: new Types.ObjectId(product_id),
+          },
+          model: product,
+        });
+
+        if (!foundProduct) {
+          throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
+        }
+
+        if (foundProduct.product_shop.toString() !== p?.shop_id) {
+          throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
+        }
+
+        if (product_quantity === 0) {
+          await CartService.deleteItemInCart({
+            userId,
+            productId: product_id,
+          });
+
+          updatedProducts.push({ product_id, status: "deleted" });
+        } else {
+          const updateCart = await updateUserCartQuantity({
+            userId,
+            product: {
+              product_id,
+              product_quantity: product_quantity - (old_quantity || 0),
+            },
+          });
+
+          updatedProducts.push({
+            product_id,
+            status: "updated",
+            update_cart: updateCart,
+          });
+        }
+      }
+    }
+
+    return updatedProducts;
+
+    // const {
+    //   product_id,
+    //   product_quantity,
+    //   old_quantity,
+    // } = products[0]?.item_products[0];
+
+    // const foundProduct = await findOneModelByFilter({
+    //   filter: {
+    //     _id: new Types.ObjectId(product_id),
+    //   },
+    //   model: product,
+    // });
+
+    // if (!foundProduct) {
+    //   throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
+    // }
+
+    // if (foundProduct.product_shop.toString() !== products[0]?.shop_id) {
+    //   throw new ErrorResponse({ statusCode: statusCodes.NOT_FOUND });
+    // }
+
+    // if (!product_quantity) {
+    //   return await CartService.deleteItemInCart({
+    //     userId,
+    //     productId: product_id,
+    //   });
+    // }
+
+    // return await updateUserCartQuantity({
+    //   userId,
+    //   product: {
+    //     product_id,
+    //     product_quantity: product_quantity - old_quantity,
+    //   },
+    // });
   }
 
   static async deleteItemInCart({ userId, productId }) {
