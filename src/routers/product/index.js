@@ -1,25 +1,45 @@
-'use strict'
+"use strict";
 
-const { Router } = require('express')
-const { asyncHandler } = require('../../helper/asyncHandler')
-const { authentication } = require('../../auth/authUtils')
-const productController = require('../../controllers/product.controller')
+const { Router } = require("express");
+const { asyncHandler } = require("../../helper/asyncHandler");
+const { authentication } = require("../../auth/authUtils");
+const productController = require("../../controllers/product.controller");
 // instead of try catch block, you can use asyncHandler
-const router = Router()
+const router = Router();
 
-router.get('/search', asyncHandler(productController.searchProduct))
-router.get('/', asyncHandler(productController.findAllProducts))
-router.get('/:id', asyncHandler(productController.findProduct))
+router.get("/search", asyncHandler(productController.searchProduct));
+router.get("/", asyncHandler(productController.findAllProducts));
+router.get("/:id", asyncHandler(productController.findProduct));
 
 // authentication
-router.use(authentication)
-router.post('/', asyncHandler(productController.createProduct))
-router.patch('/:id', asyncHandler(productController.updateProduct))
-router.post('/publish/:id', asyncHandler(productController.publishProductByShop))
-router.post('/un-publish/:id', asyncHandler(productController.unPublishProductByShop))
+// router.use(authentication)
+router.post("/", authentication, asyncHandler(productController.createProduct));
+router.patch(
+  "/:id",
+  authentication,
+  asyncHandler(productController.updateProduct)
+);
+router.post(
+  "/publish/:id",
+  authentication,
+  asyncHandler(productController.publishProductByShop)
+);
+router.post(
+  "/un-publish/:id",
+  authentication,
+  asyncHandler(productController.unPublishProductByShop)
+);
 
 /// QUERIES
-router.get('/drafts/all', asyncHandler(productController.getAllDraftsForShop))
-router.get('/published/all', asyncHandler(productController.getAllPublishForShop))
+router.get(
+  "/drafts/all",
+  authentication,
+  asyncHandler(productController.getAllDraftsForShop)
+);
+router.get(
+  "/published/all",
+  authentication,
+  asyncHandler(productController.getAllPublishForShop)
+);
 
-module.exports = router
+module.exports = router;

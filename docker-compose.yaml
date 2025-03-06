@@ -3,9 +3,18 @@ version: "3.9"
 services:
   mongodb:
     image: mongo:latest
+    container_name: mongo_container
     environment:
       - MONGODB_DATABASE="shopDEV"
     ports:
       - 27017:27017
     volumes:
       - ./.data/mongodb:/data/db
+  
+  redis:
+    image: redis:7.0
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.data/redis:/data

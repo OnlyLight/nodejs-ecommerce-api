@@ -7,6 +7,8 @@ const { ErrorResponse } = require("../core/error.response");
 const statusCodes = require("../utils/statusCodes");
 const { checkProductByServer } = require("../repositories/product.repo");
 const { getDiscountAmount } = require("../repositories/discount.repo");
+const { acquireLock, releaseLock } = require("./redis.service");
+const orderModel = require("../models/order.model");
 
 class CheckoutService {
   static async checkoutReview({ cartId, userId, products }) {
@@ -127,9 +129,59 @@ class CheckoutService {
     // }
 
     return {
-      products: shop_order_ids,
-      checkoutOrder,
+      shop_order_ids,
+      checkout_order: checkoutOrder,
     };
+  }
+
+  static async orderByUser({
+    products,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {},
+  }) {
+    const {
+      shop_order_ids,
+      checkout_order,
+    } = await CheckoutService.checkoutReviews({
+      cartId,
+      userId,
+      products,
+    });
+
+    const listProducts = shop_order_ids.flatMap((order) => order.item_products);
+
+    const acquireProduct = [];
+    listProducts.forEach(async ({ product_id, product_quantity }) => {
+      const lockKey = await acquireLock(product_id, product_quantity, cartId);
+      acquireProduct.push(lockKey);
+
+      if (!lockKey) {
+        throw new ErrorResponse({
+          message: "Product out of stock",
+          statusCode: statusCodes.CONFLICT,
+        });
+      }
+
+      await releaseLock(lockKey);
+    });
+
+    if (acquireProduct.includes(false)) {
+      throw new ErrorResponse({
+        message: "Some products updated already",
+        statusCode: statusCodes.BAD_REQUEST,
+      });
+    }
+
+    const newOrder = orderModel.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: user_payment,
+      order_products: shop_order_ids,
+    });
+    // return newOrder
   }
 }
 
