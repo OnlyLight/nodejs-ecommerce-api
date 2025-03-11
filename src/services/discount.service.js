@@ -1,11 +1,7 @@
 "use strict";
 
-const { Types } = require("mongoose");
 const { ErrorResponse } = require("../core/error.response");
-const discountModel = require("../models/discount.model");
 const statusCodes = require("../utils/statusCodes");
-const { getUnSelectData, findAllInModel, getSelectData } = require("../utils");
-const { product } = require("../models/product.model");
 const {
   findAllDiscountCodesUnSelect,
   findAllDiscountCodesBelongToProducts,
