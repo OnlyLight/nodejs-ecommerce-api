@@ -1,5 +1,6 @@
 "use strict";
 
+const { Types } = require("mongoose");
 const { ErrorResponse } = require("../core/error.response");
 const { product, clothing, electronic } = require("../models/product.model");
 const { insertInventory } = require("../repositories/inventory.repo");
@@ -20,6 +21,7 @@ const {
   updateNestedObjectParser,
 } = require("../utils");
 const statusCodes = require("../utils/statusCodes");
+const { pushNotiToSystem } = require("./notification.service");
 
 class ProductFactory {
   static productRegistry = {};
@@ -158,6 +160,14 @@ class Product {
         statusCode: statusCodes.BAD_REQUEST,
       });
     }
+
+    const rs = await pushNotiToSystem({
+      senderId: new Types.ObjectId(this.product_shop),
+      options: {
+        product_name: this.product_name,
+        product_shop: this.product_shop,
+      },
+    });
 
     return newProduct;
   }

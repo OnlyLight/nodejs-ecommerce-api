@@ -8,8 +8,10 @@ const {
   updateModel,
   findAllInModel,
   getSelectData,
+  findOneModelById,
 } = require("../utils");
 const statusCodes = require("../utils/statusCodes");
+const { product } = require("../models/product.model");
 
 //
 // addComment [User, Shop]
@@ -110,12 +112,13 @@ class CommentService {
           comment_productId: new Types.ObjectId(productId),
           comment_left: { $gt: parent.comment_left },
           comment_right: { $lte: parent.comment_right },
+          comment_is_deleted: false,
         },
         sort: { comment_left: 1 },
         select: getSelectData([
           "comment_left",
           "comment_right",
-          "comment_parent",
+          "comment_parentId",
         ]),
         page,
         limit,
@@ -130,18 +133,102 @@ class CommentService {
       filter: {
         comment_productId: new Types.ObjectId(productId),
         comment_parentCommentId: parentCommentId,
+        comment_is_deleted: false,
       },
       sort: { comment_left: 1 },
       select: getSelectData([
         "comment_left",
         "comment_right",
-        "comment_parent",
+        "comment_parentId",
       ]),
       page,
       limit,
     });
 
     return comments;
+  }
+
+  async deleteComments({ commentId, productId }) {
+    const foundProduct = await findOneModelById({
+      model: product,
+      id: productId,
+    });
+
+    if (!foundProduct) {
+      throw new ErrorResponse({
+        message: "Product not found",
+        statusCode: statusCodes.NOT_FOUND,
+      });
+    }
+
+    const comment = await findOneModelById({
+      model: commentModel,
+      id: commentId,
+    });
+
+    if (!comment) {
+      throw new ErrorResponse({
+        message: "Comment not found",
+        statusCode: statusCodes.NOT_FOUND,
+      });
+    }
+
+    const left = comment.comment_left;
+    const right = comment.comment_right;
+
+    const width = right - left + 1;
+
+    // await updateModel({
+    //   model: commentModel,
+    //   filter: {
+    //     comment_productId: new Types.ObjectId(productId),
+    //     comment_left: { $gte: left },
+    //     comment_right: { $lte: right },
+    //   },
+    //   payload: { $set: { comment_is_deleted: true } },
+    // });
+
+    // await updateModel({
+    //   model: commentModel,
+    //   filter: {
+    //     comment_productId: new Types.ObjectId(productId),
+    //     comment_left: { $gt: right },
+    //     comment_right: { $gt: right },
+    //   },
+    //   payload: { $inc: { comment_left: -width, comment_right: -width } },
+    // });
+
+    await commentModel.updateMany(
+      {
+        comment_productId: new Types.ObjectId(productId),
+        comment_left: { $gte: left, $lte: right },
+      },
+      {
+        $set: { comment_is_deleted: true },
+      }
+    );
+
+    await commentModel.updateMany(
+      {
+        comment_productId: new Types.ObjectId(productId),
+        comment_left: { $gt: right },
+      },
+      {
+        $inc: { comment_left: -width },
+      }
+    );
+
+    await commentModel.updateMany(
+      {
+        comment_productId: new Types.ObjectId(productId),
+        comment_right: { $gt: right },
+      },
+      {
+        $inc: { comment_right: -width },
+      }
+    );
+
+    return true;
   }
 }
 

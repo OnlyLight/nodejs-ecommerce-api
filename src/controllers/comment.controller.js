@@ -4,6 +4,7 @@ const { SuccessResponse } = require("../core/success.response");
 const {
   createComment,
   getCommentsByParentId,
+  deleteComments,
 } = require("../services/comment.service");
 const statusCodes = require("../utils/statusCodes");
 
@@ -28,6 +29,17 @@ class CommentController {
         parentCommentId: req.query.parentCommentId,
         limit: parseInt(req.query.limit),
         page: parseInt(req.query.page),
+      }),
+    }).send(res);
+  }
+
+  async deleteComments(req, res) {
+    new SuccessResponse({
+      statusCode: statusCodes.OK,
+      metadata: await deleteComments({
+        userId: req.query.userId,
+        productId: req.query.productId,
+        commentId: req.query.commentId,
       }),
     }).send(res);
   }

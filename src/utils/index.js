@@ -59,7 +59,7 @@ const findAllInModel = async ({ filter, model, limit, sort, page, select }) => {
   return result;
 };
 
-const findOneModelById = async ({ id, select, model, isLean = true }) => {
+const findOneModelById = async ({ id, select = [], model, isLean = true }) => {
   if (isLean) return await model.findById(id).select(select);
   return await model.findById(id).select(select).lean();
 };

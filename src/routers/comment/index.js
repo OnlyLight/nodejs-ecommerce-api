@@ -8,6 +8,11 @@ const { authentication } = require("../../auth/authUtils");
 const router = Router();
 
 router.post("/", authentication, asyncHandler(commentController.createComment));
+router.delete(
+  "/",
+  authentication,
+  asyncHandler(commentController.deleteComments)
+);
 
 // QUERIES
 router.get(

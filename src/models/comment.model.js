@@ -32,7 +32,7 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: DOCUMENT_NAME,
     },
-    isDeleted: {
+    comment_is_deleted: {
       type: Boolean,
       default: false,
     },
