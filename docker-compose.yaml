@@ -10,6 +10,8 @@ services:
       - 27017:27017
     volumes:
       - ./.data/mongodb:/data/db
+    networks:
+      - server_network
   
   redis:
     image: redis:7.0
@@ -17,4 +19,97 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./.data/redis:/data
+      - redis_data:/data
+    networks:
+      - server_network
+
+  # kafka:
+  #   image: confluentinc/cp-kafka:7.5.3
+  #   container_name: kafka
+  #   # network_mode: "host"
+  #   volumes:
+  #     - kafka_data:/var/lib/kafka/data
+  #   environment:
+  #     # Kafka cluster uniquely
+  #     # generate with UUID
+  #     CLUSTER_ID: 'q1Sh-9_ISia_zwGINzRvyQ'
+
+  #     # A unique identifier for this broker within the Kafka cluster
+  #     # must be an integer that uniquely
+  #     KAFKA_NODE_ID: 1
+
+  #     # mapping between listener names and their security protocols
+  #     # PLAINTEXT: internal network (like internal network docker...)
+  #     # CONTROLLER: sidecar RACK or zookeeper
+  #     # PLAINTEXT_HOST: external
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+
+  #     # brokers advertise themselves to CLIENTS (external app) for connection.
+  #     # tells clients to use the broker's internal hostname kafka for inter-broker communication
+  #     # and localhost for external access if the external app runs on the same host as Docker.
+  #     # If your external application is running on a different machine (not the Docker host)
+  #     # => Replace it with your host’s IP or hostname (PLAINTEXT_HOST://192.168.1.100:9092) ==> Docker host’s IP is 192.168.1.100 or 127.0.0.1
+  #     # PLAINTEXT_HOST use for situation when external app access PLAINTEXT_HOST of KAFKA_LISTENERS it will find to PLAINTEXT_HOST to access to container inner side
+  #     # routable address
+  #     KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+
+  #     # actual network interfaces and ports the broker listens on (It’s about where Kafka listens, not what it tells clients)
+  #     # PLAINTEXT://kafka:29092 for internal communication
+  #     # CONTROLLER://kafka:29093 for controller tasks
+  #     # PLAINTEXT_HOST://0.0.0.0:9092 for external access (This maps port 9092 on your host to port 9092 in the container, where Kafka is listening (PLAINTEXT_HOST://0.0.0.0:9092))
+  #     # that is the port Kafka is truly listening on Not `KAFKA_ADVERTISED_LISTENERS`
+  #     # listening for binding
+  #     KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+
+  #     # Specifies the roles of this broker
+  #     KAFKA_PROCESS_ROLES: 'broker,controller'
+
+  #     # Lists the brokers participating in the controller quorum
+  #     # designates broker 1 at kafka:29093 as part of the controller quorum.
+  #     KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+
+  #     # Specifies which listener Kafka brokers use for internal communication
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+
+  #     # Indicates the listener(s) used by the broker when acting as a controller
+  #     KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+  #     # Configures the replication factor for the offsets topic, which stores consumer group offsets.
+  #     # A value of 1 means there is only one replica of the offsets topic
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #   ports:
+  #     - "9092:9092" # this will map with PLAINTEXT_HOST://0.0.0.0:9092
+  #   networks:
+  #     - steaming_network
+
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui:latest
+  #   container_name: kafka-ui
+  #   # network_mode: host
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     # Defines the name of the Kafka cluster
+  #     KAFKA_CLUSTERS_0_NAME: local
+
+  #     # Kafka-UI connects to the Kafka cluster to fetch metadata
+  #     # server address
+  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+
+  #     # Enables dynamic configuration in Kafka-UI
+  #     # allowing updates or changes to be reflected without restarting the UI
+  #     DYNAMIC_CONFIG_ENABLED: 'true'
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - steaming_network
+
+volumes:
+  redis_data:
+  # kafka_data:
+
+networks:
+  server_network:
+    driver: bridge
+  # steaming_network:
+  #   driver: bridge
