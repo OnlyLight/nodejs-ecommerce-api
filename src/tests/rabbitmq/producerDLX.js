@@ -24,7 +24,7 @@ const runProducer = async () => {
     // create Queue
     const queueResult = await channel.assertQueue(notiQueue, {
       exclusive: false, // exclusive: allow multi connect the same time
-      deadLetterExchange: notificationExchangeDLX,
+      deadLetterExchange: notificationExchangeDLX, // when notiQueue error, the message will move to deadLetterExchange
       deadLetterRoutingKey: notificationRoutingKeyDLX,
     });
 
@@ -33,13 +33,14 @@ const runProducer = async () => {
     );
 
     // bind queue
+    // queueResult.queue => name Queue tmp
     await channel.bindQueue(queueResult.queue, notificationExchange);
 
     const msg = "new product";
 
     // use Buffer to send faster than text original
     await channel.sendToQueue(queueResult.queue, Buffer.from(msg), {
-      expiration: 10000,
+      expiration: "10000",
     });
 
     setTimeout(() => {
