@@ -94,6 +94,13 @@ const updateNestedObjectParser = (obj) => {
   return final;
 };
 
+const replacePlaceholder = (template, params) => {
+  Object.keys(template).forEach((key) => {
+    const placeHolder = `{{${key}}}`;
+    template = template.replace(new RegExp(placeHolder, "g"), params[key]);
+  });
+};
+
 module.exports = {
   // QUERIES
   getInfoDta,
@@ -106,4 +113,5 @@ module.exports = {
   // Updates
   updateModel,
   updateNestedObjectParser,
+  replacePlaceholder,
 };

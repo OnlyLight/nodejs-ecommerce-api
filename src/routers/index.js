@@ -21,5 +21,7 @@ router.use("/v1/api/inventory", require("./inventory"));
 router.use("/v1/api/discount", require("./discount"));
 router.use("/v1/api/comment", require("./comment"));
 router.use("/v1/api/notification", require("./notification"));
+router.use("/v1/api/email", require("./email"));
+router.use("/v1/api/user", require("./user"));
 
 module.exports = router;
