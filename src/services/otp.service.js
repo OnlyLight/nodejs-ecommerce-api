@@ -2,6 +2,9 @@
 
 const { randomInt } = require("crypto");
 const otpModel = require("../models/otp.model");
+const { findOneModelByFilter } = require("../utils");
+const { ErrorResponse } = require("../core/error.response");
+const statusCodes = require("../utils/statusCodes");
 
 class OtpService {
   generatorTokenRandom() {
@@ -18,6 +21,24 @@ class OtpService {
     });
 
     return newToken;
+  }
+
+  async checkEmailToken({ toekn }) {
+    const token = await findOneModelByFilter({
+      model: otpModel,
+      filter: { otp_token: token },
+    });
+
+    if (!token) {
+      throw new ErrorResponse({
+        message: "Token not found",
+        statusCode: statusCodes.NOT_FOUND,
+      });
+    }
+
+    await otpModel.deleteOne({ otp_token: token });
+
+    return token;
   }
 }
 
