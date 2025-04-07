@@ -60,8 +60,8 @@ const findAllInModel = async ({ filter, model, limit, sort, page, select }) => {
 };
 
 const findOneModelById = async ({ id, select = [], model, isLean = true }) => {
-  if (isLean) return await model.findById(id).select(select);
-  return await model.findById(id).select(select).lean();
+  if (isLean) return await model.findById(id).select(select).lean();
+  return await model.findById(id).select(select);
 };
 
 const findOneModelByFilter = async ({ filter, model, isLean = true }) => {
@@ -101,6 +101,10 @@ const replacePlaceholder = (template, params) => {
   });
 };
 
+const randomProductId = () => {
+  return Math.floor(Math.random() * 10000000000000000) + 1; // 10 digits random number
+};
+
 module.exports = {
   // QUERIES
   getInfoDta,
@@ -114,4 +118,5 @@ module.exports = {
   updateModel,
   updateNestedObjectParser,
   replacePlaceholder,
+  randomProductId,
 };

@@ -7,7 +7,7 @@ const { generateKeyPair, createTokenPair } = require("../auth/authUtils");
 const { getInfoDta, updateModel } = require("../utils");
 const KeyTokenService = require("./keyToken.service");
 const { ErrorResponse } = require("../core/error.response");
-const { findByEmail } = require("./shop.service");
+const { findByEmail } = require("../repositories/shop.repo");
 const statusCodes = require("../utils/statusCodes");
 const keyTokenModel = require("../models/keyToken.model");
 

@@ -10,10 +10,17 @@ const router = Router();
 router.get("/search", asyncHandler(productController.searchProduct));
 router.get("/", asyncHandler(productController.findAllProducts));
 router.get("/:id", asyncHandler(productController.findProduct));
+router.get("/sku/select_variation", asyncHandler(productController.findOneSku));
+router.get("/spu/info", asyncHandler(productController.findOneSpu));
 
 // authentication
 // router.use(authentication)
 router.post("/", authentication, asyncHandler(productController.createProduct));
+router.post(
+  "/spu/new",
+  authentication,
+  asyncHandler(productController.createSPU)
+);
 router.patch(
   "/:id",
   authentication,
