@@ -1,7 +1,12 @@
 "use strict";
 
+const { CACHE_PRODUCT } = require("../configs/constant.config");
 const { ErrorResponse } = require("../core/error.response");
 const skuModel = require("../models/sku.model");
+const {
+  getCacheIO,
+  setCacheIOExpiration,
+} = require("../repositories/cache.repo");
 const { randomProductId, findOneModelByFilter } = require("../utils");
 const statusCodes = require("../utils/statusCodes");
 const _ = require("lodash");
@@ -27,18 +32,24 @@ class SKUService {
 
   async oneSku({ sku_id, product_id }) {
     try {
-      const sku = await findOneModelByFilter({
+      const skuTmp = await findOneModelByFilter({
         model: skuModel,
         filter: { sku_id, product_id },
       });
 
-      if (!sku) {
-        throw new ErrorResponse("SKU not found", statusCodes.NOT_FOUND);
-      }
+      const valueCache = skuTmp ? skuTmp : null;
 
-      // set cached
+      // write Redis
+      await setCacheIOExpiration({
+        key: skuKeyCache,
+        value: JSON.stringify(valueCache),
+        expires: 30,
+      });
 
-      return _.omit(sku, ["__v", "updateAt", "createdAt", "isDeleted"]);
+      return {
+        skuCache,
+        toLoad: "dbs",
+      };
     } catch (error) {
       throw new ErrorResponse(error.message, statusCodes.INTERNAL_SERVER_ERROR);
     }

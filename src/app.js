@@ -26,6 +26,9 @@ require("./dbs/init.mongodb");
 // init Redis
 initRedis();
 
+// init ioRedis
+ioRedis.initRedis({ IOREDIS_IS_ENABLED: true });
+
 app.post("/key", async (req, res) => {
   const newKey = await apiKeyModel.create({
     key: crypto.randomBytes(64).toString("hex"),
