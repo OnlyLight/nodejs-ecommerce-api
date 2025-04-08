@@ -4,13 +4,18 @@ const { Router } = require("express");
 const { asyncHandler } = require("../../helper/asyncHandler");
 const { authentication } = require("../../auth/authUtils");
 const productController = require("../../controllers/product.controller");
+const { readCache } = require("../../middlewares/cache.middleware");
 // instead of try catch block, you can use asyncHandler
 const router = Router();
 
 router.get("/search", asyncHandler(productController.searchProduct));
 router.get("/", asyncHandler(productController.findAllProducts));
 router.get("/:id", asyncHandler(productController.findProduct));
-router.get("/sku/select_variation", asyncHandler(productController.findOneSku));
+router.get(
+  "/sku/select_variation",
+  readCache,
+  asyncHandler(productController.findOneSku)
+);
 router.get("/spu/info", asyncHandler(productController.findOneSpu));
 
 // authentication
